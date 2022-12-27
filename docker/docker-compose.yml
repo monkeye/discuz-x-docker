@@ -1,0 +1,72 @@
+version: "3"
+services:
+  dNginx:
+    image: nginx:latest
+    container_name: "Discuz-nginx"
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - TZ=Asia/Shanghai
+    depends_on:
+      - "dPhp"
+      - "dRedis"
+      - "dMysql"
+    volumes:
+      - "../nginx/conf.d:/etc/nginx/conf.d"
+      - "../www:/usr/nginx/html"
+      - "../nginx/log:/var/log/nginx"
+    networks:
+      - net-app
+  dPhp:
+    image: php:8.1-fpm
+    container_name: "Discuz-php"
+    restart: always
+    ports:
+      - "9000:9000"
+    environment:
+      - TZ=Asia/Shanghai
+    depends_on:
+      - "dRedis"
+      - "dMysql"
+    volumes:
+      - "../www:/usr/nginx/html"
+   #   - "../php/etc:/usr/local/etc:rw"
+    networks:
+      - net-app
+    build: './php/docker'
+  dRedis:
+    image: redis:7.0.0
+    container_name: "Discuz-redis"
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - "../redis/data:/data"
+      - "../redis/conf/redis.conf:/etc/redis/redis.conf"
+    environment:
+      - TZ=Asia/Shanghai
+    sysctls: # 设置容器中的内核参数
+      - net.core.somaxconn=1024
+    command: /bin/sh -c "echo 'vm.overcommit_memory = 1' >> /etc/sysctl.conf
+      && redis-server /etc/redis/redis.conf --appendonly yes" # 指定配置文件并开启持久化
+    privileged: true # 使用该参数，container内的root拥有真正的root权限。否则，container内的root只是外部的一个普通用户权限
+    networks:
+      - net-app
+  dMysql:
+    image: mysql:8.0
+    container_name: "Discuz-mysql"
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      - TZ=Asia/Shanghai
+      - MYSQL_ROOT_PASSWORD=1234567
+    volumes:
+      - "../mysql/data:/var/lib/mysql"
+    networks:
+      - net-app
+
+networks:
+  net-app:
