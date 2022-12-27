@@ -1,1 +1,0 @@
-docker exec -it witFrame-php /bin/bash -c "php /usr/nginx/html/app_backend/backend/command.php -n Backend_Server_Cmd"
