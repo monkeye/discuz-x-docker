@@ -7,7 +7,7 @@ Discuz! X Docker 环境安装
 
 #### 安装教程
 
-1.  在宝塔安装“Docker管理器”插件
+1.  安装 Docker
 2.  chmod 755 install.sh
 3.  在命令行执行 install.sh
 
